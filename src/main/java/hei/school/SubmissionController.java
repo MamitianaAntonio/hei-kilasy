@@ -96,10 +96,11 @@ public class SubmissionController {
         result.put("submittedAt", submittedAt);
         result.put("late", submittedAt.toLocalDate().isAfter(deadline));
         if (row.get("raw_points") != null) {
-            double raw = ((BigDecimal) row.get("raw_points")).doubleValue();
-            double max = ((BigDecimal) row.get("max_points")).doubleValue();
+            BigDecimal raw = (BigDecimal) row.get("raw_points");
+            BigDecimal max = (BigDecimal) row.get("max_points");
+            BigDecimal grade = GradeCalculator.penalizedGrade(raw, max, deadline, submittedAt);
             result.put("rawPoints", raw);
-            result.put("grade", Math.round(raw / max * 20 * 10) / 10.0);
+            result.put("grade", grade);
             result.put("feedback", row.get("feedback"));
         }
         return ResponseEntity.ok(result);
@@ -130,12 +131,13 @@ public class SubmissionController {
         jdbcTemplate.update("UPDATE submission SET raw_points = ?, feedback = ?, graded_at = now() WHERE id = ?",
                 points, feedback, id);
 
-        // grade out of 20
-        double grade = Math.round(points / max * 20 * 10) / 10.0;
-
         LocalDate deadline = ((java.sql.Date) row.get("deadline")).toLocalDate();
         LocalDateTime submittedAt = ((Timestamp) row.get("submitted_at")).toLocalDateTime();
         boolean late = submittedAt.toLocalDate().isAfter(deadline);
+
+        // grade out of 20, with late penalty
+        BigDecimal grade = GradeCalculator.penalizedGrade(BigDecimal.valueOf(points),
+                (BigDecimal) row.get("max_points"), deadline, submittedAt);
 
         // notify the student by email
         String fullName = (String) row.get("full_name");
