@@ -158,6 +158,10 @@ public class SubmissionController {
         BigDecimal grade = GradeCalculator.penalizedGrade(BigDecimal.valueOf(points),
                 (BigDecimal) row.get("max_points"), deadline, submittedAt);
 
+        // grade out of 20, with late penalty
+        BigDecimal grade = GradeCalculator.penalizedGrade(BigDecimal.valueOf(points),
+                (BigDecimal) row.get("max_points"), deadline, submittedAt);
+
         // notify the student by email
         String fullName = (String) row.get("full_name");
         String firstName = fullName.split(" ")[0];
