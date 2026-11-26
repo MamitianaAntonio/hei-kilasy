@@ -28,6 +28,8 @@ public class SubmissionController {
 
     @Autowired
     private JavaMailSender mailSender;
+    @Autowired
+    private SmsSender smsSender;
 
     @PostMapping("/exercises/{id}/submissions")
     public ResponseEntity<?> submit(@PathVariable long id, @RequestBody Map<String, Object> body) {
@@ -156,6 +158,16 @@ public class SubmissionController {
         message.setText(text);
         mailSender.send(message);
         System.out.println("Email de note envoyé à " + row.get("email"));
+
+        String phone = (String) row.get("phone");
+        if (phone != null && !phone.isBlank()) {
+            String smsText = "Votre note pour « " + title + " » est disponible : " + grade + "/20.";
+            try {
+                smsSender.send(phone, smsText);
+            } catch (Exception e) {
+                System.err.println("Échec de l'envoi du SMS à " + phone + " : " + e.getMessage());
+            }
+        }
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", id);
