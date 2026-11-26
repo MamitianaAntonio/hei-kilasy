@@ -18,14 +18,18 @@ CREATE TABLE IF NOT EXISTS student
 
 CREATE TABLE IF NOT EXISTS exercise
 (
-    id          BIGSERIAL PRIMARY KEY,
-    teacher_id  BIGINT       NOT NULL REFERENCES teacher (id),
-    title       VARCHAR(200) NOT NULL,
-    description TEXT,
-    max_points  NUMERIC(5, 2) NOT NULL DEFAULT 20,
-    deadline    DATE         NOT NULL,
-    created_at  TIMESTAMP    NOT NULL DEFAULT now()
+    id               BIGSERIAL PRIMARY KEY,
+    teacher_id       BIGINT        NOT NULL REFERENCES teacher (id),
+    title            VARCHAR(200)  NOT NULL,
+    description      TEXT,
+    max_points       NUMERIC(5, 2) NOT NULL DEFAULT 20,
+    deadline         DATE,
+    duration_minutes INTEGER,
+    created_at       TIMESTAMP     NOT NULL DEFAULT now()
 );
+
+ALTER TABLE exercise ADD COLUMN IF NOT EXISTS duration_minutes INTEGER;
+ALTER TABLE exercise ALTER COLUMN deadline DROP NOT NULL;
 
 CREATE TABLE IF NOT EXISTS submission
 (
@@ -39,4 +43,12 @@ CREATE TABLE IF NOT EXISTS submission
     feedback     TEXT,
     graded_at    TIMESTAMP,
     UNIQUE (exercise_id, student_id)
+);
+
+CREATE TABLE IF NOT EXISTS exercise_start
+(
+    exercise_id BIGINT    NOT NULL REFERENCES exercise (id),
+    student_id  BIGINT    NOT NULL REFERENCES student (id),
+    started_at  TIMESTAMP NOT NULL DEFAULT now(),
+    PRIMARY KEY (exercise_id, student_id)
 );

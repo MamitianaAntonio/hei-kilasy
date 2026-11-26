@@ -37,7 +37,8 @@ public class CsvExport {
             if (row.get("raw_points") != null) {
                 BigDecimal raw = (BigDecimal) row.get("raw_points");
                 BigDecimal max = (BigDecimal) row.get("max_points");
-                LocalDate deadline = ((java.sql.Date) row.get("deadline")).toLocalDate();
+                java.sql.Date deadlineDate = (java.sql.Date) row.get("deadline");
+                LocalDate deadline = deadlineDate == null ? null : deadlineDate.toLocalDate();
                 LocalDateTime submittedAt = ((Timestamp) row.get("submitted_at")).toLocalDateTime();
                 BigDecimal grade = GradeCalculator.penalizedGrade(raw, max, deadline, submittedAt);
                 note = grade.toPlainString().replace('.', ',');
